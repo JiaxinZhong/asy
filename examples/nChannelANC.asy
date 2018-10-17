@@ -12,6 +12,20 @@ triple CAMERA = (1,1,0.25);
 currentprojection=orthographic(CAMERA);
 /* currentprojection=obliqueZ; */
 
+// Set Direction of a point toward the camera.
+triple cameradirection(triple pt, projection P=currentprojection) {
+	if (P.infinity) {
+		return unit(P.camera);
+	} else {
+		return unit(P.camera - pt);
+	}
+}
+
+// Move a point closer to the camera.
+triple towardcamera(triple pt, real distance=1, projection P=currentprojection) {
+	return pt + distance * cameradirection(pt, P);
+}
+
 // draw the primary source center at the origin point
 draw(scale3(0.04)*unitsphere, red);
 
@@ -21,6 +35,7 @@ real radSec = 1;
 // draw the surface where the secondary sources lie in 
 surface surfSec = scale3(radSec) * unitsphere;
 draw(surfSec, lightgreen+opacity(0.3));
+draw(circle(O,radSec,normal=Z), palegray);
 /* draw(circle(O,radSec,normal=Z), palegray); */
 /* draw(circle(O,radSec,normal=Y), palegray); */
 /* draw(circle(O,radSec,normal=X), palegray); */
@@ -82,6 +97,7 @@ triple[] errLoc = ratioErr * secLoc;
 // draw the surface where the error microphones lie in 
 surface surfErr = scale3(ratioErr*radSec) * unitsphere;
 draw(surfErr, lightgray+opacity(0.3));
+draw(circle(O,radErr,normal=Z), palegray); 
 /* draw(circle(O,radErr,normal=Z), palegray); */
 /* draw(circle(O,radErr,normal=X), palegray); */
 /* draw(circle(O,radErr,normal=Y), palegray); */
@@ -125,86 +141,68 @@ for (int iErr = 0; iErr < errLoc.length; ++iErr)
 	/* draw(secLoc[1]--secLoc[3], dashed); */
 	/* draw(secLoc[2]--secLoc[3], dashed); */
 /* } */
-/* if (secLoc.length == 6){ */
-	/* draw(secLoc[0]--secLoc[3], dashed); */
-	/* draw(secLoc[0]--secLoc[5], dashed); */
-	/* draw(secLoc[0]--secLoc[2], dashed); */
-	/* draw(secLoc[0]--secLoc[4], dashed); */
-	/* draw(secLoc[1]--secLoc[2], dashed); */
-	/* draw(secLoc[1]--secLoc[3], dashed); */
-	/* draw(secLoc[1]--secLoc[5], dashed); */
-	/* draw(secLoc[1]--secLoc[4], dashed); */
-	/* draw(secLoc[2]--secLoc[5], dashed); */
-	/* draw(secLoc[1]--secLoc[4], dashed); */
-	/* draw(secLoc[3]--secLoc[4], dashed); */
-	/* draw(secLoc[3]--secLoc[5], dashed); */
-/* } */
 
 
 
 // Draw the xy plane
 /* draw(scale3(3)*shift(-0.5*X-0.5*Y)*unitplane, mediumgray+opacity(0.2)); */
 
-xaxis3("$x$",0,1.5,linewidth(0.8pt));
-yaxis3("$y$",0,1.5,linewidth(0.8pt));
-zaxis3("$z$",0,1.2,linewidth(0.8pt));
+xaxis3("$x$",0,1.5,linewidth(0.6pt), arrow=Arrow3(DefaultHead2(normal=Y)));
+yaxis3("$y$",0,1.5,linewidth(0.6pt), arrow=Arrow3(DefaultHead2(normal=X)));
+zaxis3("$z$",0,1.2,linewidth(0.6pt), arrow=Arrow3(DefaultHead2(normal=X+Y)));
 
 // Draw the label for the primary source
-triple dirPriLabel = (1.1,-1.1,1);
+triple dirPriLabel = (1.14,-1.14,1);
 triple offsetPriLabel = (0.04,-0.04,0.04);
-draw(scale3(0.3)*shift(offsetPriLabel)*(O--dirPriLabel), L = Label('Primary Source',position=EndPoint,p=fontsize(10.5pt)));
+draw(scale3(0.3)*shift(offsetPriLabel)*(O--dirPriLabel), L = Label('primary source',position=EndPoint,p=fontsize(10.5pt)));
 
 // Draw the label for the ith microphone
-triple dirIErrLabel = (1.55,-1.55,0.5);
-triple offsetIErrLabel = errLoc[5];
-draw(shift(offsetIErrLabel)*scale3(0.1)*(O--dirIErrLabel), L=Label('$i$th Error Microphone', position=EndPoint,p=fontsize(10.5pt)));
+triple dirIErrLabel = (1.75,-1.75,0.5);
+triple offsetIErrLabel = errLoc[5]+0.05Z;
+draw(shift(offsetIErrLabel)*scale3(0.1)*(O--dirIErrLabel), L=Label('$i$th error microphone', position=EndPoint,p=fontsize(10.5pt)));
 
 // Draw the label for the ith secondary loudspeaker
-triple dirISecLabel = (0.51,-0.51,-1);
-triple offsetISecLabel = secLoc[5];
-draw(shift(offsetISecLabel)*scale3(0.2)*(O--dirISecLabel), L=Label('$i$th Secondary Loudspeaker', position=EndPoint,p=fontsize(10.5pt)));
+triple dirISecLabel = (0.48,-0.48,-1);
+triple offsetISecLabel = secLoc[5]+0.05X-0.05Y+0.025Z;
+draw(shift(offsetISecLabel)*scale3(0.2)*(O--dirISecLabel), L=Label('$i$th secondary loudspeaker', position=EndPoint,p=fontsize(10.5pt)));
 
 // Draw the label for the jth error microphone
-triple dirJErrLabel = (-0.3,0.3,-1.2);
-triple offsetJErrLabel = errLoc[3];
-draw(shift(offsetJErrLabel)*scale3(0.4)*(O--dirJErrLabel), L=Label('$j$th Error Microphone', position=EndPoint,p=fontsize(10.5pt)));
+triple dirJErrLabel = (-0.28,0.28,-1.2);
+triple offsetJErrLabel = errLoc[3]+0.05Y;
+draw(shift(offsetJErrLabel)*scale3(0.4)*(O--dirJErrLabel), L=Label('$j$th error microphone', position=EndPoint,p=fontsize(10.5pt)));
 
 // Draw the label for the jth secondary loudspeaker
-triple dirJSecLabel = (0,0,-1);
-triple offsetJSecLabel = secLoc[3];
-draw(shift(offsetJSecLabel)*scale3(0.6)*(O--dirJSecLabel), L=Label('$j$th Secondary Loudspeaker', position=EndPoint,p=fontsize(10.5pt)));
+/* triple dirJSecLabel = (-0.2,0.25,1.9); */
+triple dirJSecLabel = (-0.2,0.25,0.6);
+triple offsetJSecLabel = secLoc[3]-0.05X+0.05Y+0.025Z;
+draw(shift(offsetJSecLabel)*scale3(0.6)*(O--dirJSecLabel));
+/* draw(shift(offsetJSecLabel)*scale3(0.6)*(O--dirJSecLabel), L=Label('$j$th secondary loudspeaker', position=EndPoint,p=fontsize(10.5pt))); */
+/* label("$j$th secondary loudspeaker", position=towardcamera(-0.52X+0.32Y+1.05Z), fontsize(10.5pt)); */
+label(minipage("$j$th secondary\\ loudspeaker"), position=towardcamera(-0.7X+0.5Y+0.32Z), fontsize(10.5pt));
 
 // Draw the bars of the ith and jth 
 /* triple dirBarISec = unit(X-0.2Z); */
 /* draw(shift(secLoc[5])*scale3(0.2)*(O--dirBarISec)); */
 /* draw(shift(errLoc[3])*scale3(0.2)*(O--dirBarISec)); */
 
-//Direction of a point toward the camera.
-triple cameradirection(triple pt, projection P=currentprojection) {
-	if (P.infinity) {
-		return unit(P.camera);
-	} else {
-		return unit(P.camera - pt);
-	}
-}
-
-//Move a point closer to the camera.
-triple towardcamera(triple pt, real distance=1, projection P=currentprojection) {
-	return pt + distance * cameradirection(pt, P);
-}
 
 // Connect the ith secondary loudspkear and the jth error microphone
+draw(shift(0.05X)*(secLoc[5]-0.02Z--errLoc[3]-0.02Z), linewidth(0.8pt), arrow=Arrows3(TeXHead2(normal=CAMERA)),bar=Bars3(dir=0.5Z+Y));
+	  /* L=Label('$d_{\mathrm{se},ij}$', position=Relative(0.7)),align=-X+Y);  */
+label('$d_{\mathrm{se},ij}$', position=towardcamera(0.45Y+0.3Z)); 
 /* draw(shift(0.05X)*(secLoc[5]-0.02Z--errLoc[3]-0.02Z), linewidth(0.8pt), arrow=Arrows3(TeXHead2(normal=CAMERA)), bar=Bars3(dir=0.5Z+Y), */
 	/* L=Label('$d_{\mathrm{se},ij}$', position=Relative(0.4)),align=-X+Y); */
-draw(secLoc[5]--errLoc[3], linewidth(0.8pt), arrow=Arrows3(TeXHead2(normal=CAMERA)));
+/*draw(secLoc[5]--errLoc[3], linewidth(0.8pt), arrow=Arrows3(TeXHead2(normal=CAMERA)));*/
 	/* L=Label('$d_{\mathrm{se},ij}$', position=Relative(0.7)),align=0.9*unit(-X+Y)); */
-label("$d_{\mathrm{se},ij}$", position=towardcamera(0.53Y+0.25Z));
+/*label("$d_{\mathrm{se},ij}$", position=towardcamera(0.53Y+0.25Z));*/
 
 // Connect the ith secondary loudspkear and the jth secondary microphone
+draw(shift(-0X+0Y)*(secLoc[5]+0.08Y--secLoc[3]+0.05Z-0.02Y), linewidth(0.8pt), Arrows3(TeXHead2(normal=CAMERA)), 
+	   L=Label('$d_{\mathrm{ss},ij}$', position=Relative(0.4)), align=-X+Y, bar=Bars3(dir=0.5Z+Y)); 
 /* draw(shift(-0.1X+0.05Y)*(secLoc[5]+0.02Z--secLoc[3]+0.05Z-0.02Y), linewidth(0.8pt), Arrows3(TeXHead2(normal=CAMERA)), */
 	/* L=Label('$d_{\mathrm{ss},ij}$', position=Relative(0.4)), align=-X+Y, bar=Bars3(dir=0.5Z+Y)); */
-draw(secLoc[5]--secLoc[3], linewidth(0.8pt), Arrows3(TeXHead2(normal=CAMERA)),
-	L=Label('$d_{\mathrm{ss},ij}$', position=Relative(0.4)), align=-X+Y);
+/*draw(secLoc[5]--secLoc[3], linewidth(0.8pt), Arrows3(TeXHead2(normal=CAMERA)),*/
+	/*L=Label('$d_{\mathrm{ss},ij}$', position=Relative(0.4)), align=-X+Y);*/
 
 // Draw the label of dpe 
 draw(shift(-0.05X+0.05Y)*(O-- -0.5Z), linewidth(0.8pt),arrow=Arrows3(TeXHead2(normal=CAMERA)), bar=Bars3, L=Label('$d_\mathrm{pe}$', position=MidPoint), align=Y);
